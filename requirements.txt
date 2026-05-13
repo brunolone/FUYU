@@ -1,0 +1,7 @@
+# Backend dependencies for a minimal Django REST API session storage backend
+Django>=5.2,<6.0
+djangorestframework>=4.0
+django-cors-headers>=4.0
+python-dotenv>=1.0
+psycopg2-binary>=2.9
+gunicorn>=22.0

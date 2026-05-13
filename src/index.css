@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, rgba(236, 187, 111, 0.18), transparent 35%),
+    radial-gradient(circle at 80% 20%, rgba(252, 246, 221, 0.14), transparent 22%),
+    rgb(25, 25, 42);
+  color: #f8f3e8;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.backglass {
+  background: rgba(5, 12, 30, 0.65);
+}
+
+.scene-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.layer-sky,
+.layer-clouds,
+.layer-fore,
+.layer-road,
+.layer-tree {
+  position: absolute;
+  inset: 0;
+}
+
+.layer-sky {
+  background: linear-gradient(180deg, #e7c18c 0%, #b67e6a 55%, #4f4f6e 100%);
+}
+
+.layer-sun {
+  position: absolute;
+  left: 14%;
+  top: 8%;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(255,230,180,0.9) 0%, rgba(255,222,196,0.12) 60%, transparent 100%);
+  filter: blur(18px);
+}
+
+.layer-clouds {
+  background: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.22), transparent 12%),
+    radial-gradient(circle at 75% 15%, rgba(255, 255, 255, 0.16), transparent 10%),
+    radial-gradient(circle at 60% 40%, rgba(255, 243, 219, 0.18), transparent 15%);
+  opacity: 0.75;
+}
+
+.layer-backtrees {
+  background-image: radial-gradient(circle, rgba(15, 24, 41, 0.92), transparent 60%);
+  opacity: 0.18;
+}
+
+.layer-road {
+  background: linear-gradient(180deg, transparent 40%, rgba(29, 30, 39, 0.84) 60%, rgba(18, 20, 26, 0.98) 100%);
+}
+
+.layer-shadow {
+  background: radial-gradient(circle at 50% 20%, rgba(0, 0, 0, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.45));
+}
+
+.layer-particles {
+  background-image: radial-gradient(circle, rgba(255, 241, 204, 0.15) 0%, transparent 4%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 5%);
+  opacity: 0.55;
+  filter: blur(0.4px);
+}
+
+.layer-character {
+  position: absolute;
+  bottom: 8%;
+  left: 12%;
+  width: 26rem;
+  height: 36rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+  border-radius: 3rem;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.layer-character::before,
+.layer-character::after {
+  content: '';
+  position: absolute;
+  border-radius: 999px;
+}
+
+.layer-character::before {
+  width: 48%;
+  height: 48%;
+  background: radial-gradient(circle at 30% 20%, rgba(254, 251, 224, 0.4), transparent 50%);
+  left: 12%;
+  top: 10%;
+}
+
+.layer-character::after {
+  width: 24%;
+  height: 24%;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.18), transparent 55%);
+  right: 14%;
+  top: 20%;
+}
