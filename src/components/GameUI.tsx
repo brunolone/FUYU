@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 
 // ── Asset imports ──────────────────────────────────────────────────────────────
@@ -8,67 +8,86 @@ import ferrImg    from '../characters/ferr.png';
 import dialboxGif from '../assets/novos assets/mensagens/dialbox.gif';
 import nextBtn    from '../assets/novos assets/mensagens/botoes/next.gif';
 
-// Setas emparelhadas com os ícones
 import seta1 from '../assets/novos assets/setas/sety1.gif';
 import seta2 from '../assets/novos assets/setas/sety2.gif';
-import seta3 from '../assets/novos assets/setas/sety3.gif';
-import seta4 from '../assets/novos assets/setas/sety4.gif';
+import icf1  from '../assets/novos assets/icones fer/icf1r.gif';
+import icf2  from '../assets/novos assets/icones fer/icf2.gif';
 
-import icf1 from '../assets/novos assets/icones fer/icf1r.gif';
-import icf2 from '../assets/novos assets/icones fer/icf2.gif';
-import icf3 from '../assets/novos assets/icones fer/icf3.gif';
-import icf4 from '../assets/novos assets/icones fer/icf4.gif';
+// ── State / Data ───────────────────────────────────────────────────────────────
+import { useDialogue }      from '../hooks/useDialogue';
+import type { Choice, Dialogue } from '../utils/sceneData';
 
-// ── Dados ──────────────────────────────────────────────────────────────────────
-const CHOICES = [
-  { seta: seta1, icone: icf1, label: 'Opção 1' },
-  { seta: seta2, icone: icf2, label: 'Opção 2' },
-  { seta: seta3, icone: icf3, label: 'Opção 3' },
-  { seta: seta4, icone: icf4, label: 'Opção 4' },
+// Par seta + ícone para cada choice (2 slots)
+const CHOICE_ASSETS = [
+  { seta: seta1, icone: icf1 },
+  { seta: seta2, icone: icf2 },
 ];
 
 // ── Dialbox ────────────────────────────────────────────────────────────────────
 /**
  * Caixa de diálogo no canto superior esquerdo.
- * O frame (dialbox.gif) é renderizado com mix-blend-mode: multiply
- * para que o fundo da cena apareça transluzindo pelo interior branco.
- * O botão OK fica fora/sobreposto à borda inferior direita da caixa.
+ * - Mostra o texto da fala atual.
+ * - Botão "Próximo" aparece apenas quando NÃO há choices.
+ * - Quando há choices, o dialbox exibe "..." discreto.
+ * - Animação GSAP de fade + slide em cada troca de diálogo.
  */
-function Dialbox() {
-  const btnRef = useRef<HTMLImageElement>(null);
+interface DialboxProps {
+  dialogue: Dialogue;
+  onNext: () => void;
+  ended: boolean;
+}
 
+function Dialbox({ dialogue, onNext, ended }: DialboxProps) {
+  const btnRef  = useRef<HTMLImageElement>(null);
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const boxRef  = useRef<HTMLDivElement>(null);
+
+  const hasChoices = !!dialogue.choices?.length;
+  const displayText = hasChoices
+    ? '...'
+    : ended
+    ? '...'
+    : dialogue.text;
+
+  // ── Anima texto a cada troca de diálogo ───────────────────────────────────
   useEffect(() => {
-    if (!btnRef.current) return;
-    // Pulsar suave no botão OK
-    gsap.to(btnRef.current, {
-      scale: 1.1,
-      duration: 0.85,
+    const el = textRef.current;
+    if (!el) return;
+    gsap.fromTo(
+      el,
+      { opacity: 0, y: 10 },
+      { opacity: 1, y: 0, duration: 1.0, ease: 'power2.out', delay: 0.1 },
+    );
+  }, [dialogue.id]);
+
+  // ── Pulsar suave no botão Próximo ─────────────────────────────────────────
+  useEffect(() => {
+    const btn = btnRef.current;
+    if (!btn || hasChoices) return;
+    const tween = gsap.to(btn, {
+      scale: 1.08,
+      duration: 0.9,
       repeat: -1,
       yoyo: true,
       ease: 'sine.inOut',
     });
-  }, []);
+    return () => { tween.kill(); };
+  }, [hasChoices, dialogue.id]);
 
   return (
-    /*
-     * Wrapper posicionado: top-left, largura ~44% da tela, altura proporcional.
-     * Usa `overflow: visible` para o botão OK aparecer fora da caixa.
-     */
     <div
+      ref={boxRef}
       style={{
         position: 'absolute',
         top: '3%',
         left: '1.5%',
         width: '44%',
-        aspectRatio: '1.78 / 1',   /* ~16:9 ajustado */
+        aspectRatio: '1.78 / 1',
         zIndex: 20,
         overflow: 'visible',
       }}
     >
-      {/*
-       * Frame do dialbox — renderizado com opacidade reduzida para que
-       * o interior semi-translúcido revele a cena atrás, como na referência.
-       */}
+      {/* Frame animado */}
       <img
         src={dialboxGif}
         alt="caixa de diálogo"
@@ -85,7 +104,7 @@ function Dialbox() {
         }}
       />
 
-      {/* Texto do diálogo — dentro do frame, acima do fundo */}
+      {/* Área de texto */}
       <div
         style={{
           position: 'absolute',
@@ -95,70 +114,79 @@ function Dialbox() {
           bottom: '14%',
           zIndex: 2,
           display: 'flex',
-          alignItems: 'flex-start',
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
           paddingTop: '3%',
+          gap: '0.35em',
         }}
       >
+        {/* Speaker label — exibido apenas para falas do player */}
+        {!hasChoices && !ended && (
+          <span
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 'clamp(0.45rem, 0.7vw, 0.62rem)',
+              color: '#7a5c3a',
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              marginBottom: '0.15em',
+            }}
+          >
+            {dialogue.speaker === 'player' ? 'bruno' : dialogue.speaker}
+          </span>
+        )}
+
         <p
+          ref={textRef}
           style={{
             fontFamily: "'Inter', sans-serif",
             fontSize: 'clamp(0.6rem, 1vw, 0.85rem)',
-            color: '#1e1208',
-            lineHeight: 1.7,
+            color: hasChoices ? '#b09070' : '#1e1208',
+            lineHeight: 1.75,
             margin: 0,
             letterSpacing: '0.015em',
+            whiteSpace: 'pre-wrap',
+            fontStyle: hasChoices ? 'italic' : 'normal',
           }}
         >
-          O vento passava pela rua como se soubesse de algo que eu ainda não sabia…
+          {displayText}
         </p>
       </div>
 
-      {/*
-       * Botão OK — posicionado na borda inferior direita, sobrepondo a borda.
-       * Na referência ele aparece quase "fora" da caixa, grande e clicável.
-       */}
-      <img
-        ref={btnRef}
-        src={nextBtn}
-        alt="avançar"
-        draggable={false}
-        style={{
-          position: 'absolute',
-          bottom: '-4%',
-          right: '-2%',
-          height: 'clamp(38px, 5.5vh, 62px)',
-          width: 'auto',
-          cursor: 'pointer',
-          zIndex: 30,
-          transformOrigin: 'center',
-          filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))',
-        }}
-      />
+      {/* Botão Próximo — só aparece quando não há choices */}
+      {!hasChoices && !ended && (
+        <img
+          ref={btnRef}
+          src={nextBtn}
+          alt="avançar"
+          draggable={false}
+          onClick={onNext}
+          style={{
+            position: 'absolute',
+            bottom: '-4%',
+            right: '-2%',
+            height: 'clamp(38px, 5.5vh, 62px)',
+            width: 'auto',
+            cursor: 'pointer',
+            zIndex: 30,
+            transformOrigin: 'center',
+            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))',
+          }}
+        />
+      )}
     </div>
   );
 }
 
 // ── Personagem Bruno ───────────────────────────────────────────────────────────
-/**
- * Bruno — personagem em pé no centro-esquerdo da cena.
- * Na referência ele é menor e mais para a esquerda que Fer
- * (em termos de tela, fica por volta de 33-36% do left).
- */
 function BrunoCharacter() {
   const ref = useRef<HTMLImageElement>(null);
-
   useEffect(() => {
     if (!ref.current) return;
-    // Respiração suave — 5px de flutuação vertical
     gsap.to(ref.current, {
-      y: -5,
-      duration: 4.5,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
+      y: -5, duration: 4.5, repeat: -1, yoyo: true, ease: 'sine.inOut',
     });
   }, []);
-
   return (
     <img
       ref={ref}
@@ -169,7 +197,7 @@ function BrunoCharacter() {
         position: 'absolute',
         bottom: '0%',
         left: '33%',
-        height: '62%',      /* Menor que antes — mais proporcional ao fundo */
+        height: '62%',
         width: 'auto',
         zIndex: 15,
         filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.4))',
@@ -180,25 +208,14 @@ function BrunoCharacter() {
 }
 
 // ── Personagem Fer ─────────────────────────────────────────────────────────────
-/**
- * Fer — sentada, mais à direita e bem menor (sensação de profundidade).
- * Na referência ela está em torno de 49-52% do left, ~30% de altura.
- */
 function FerCharacter() {
   const ref = useRef<HTMLImageElement>(null);
-
   useEffect(() => {
     if (!ref.current) return;
     gsap.to(ref.current, {
-      y: -3,
-      duration: 5.5,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-      delay: 1.5,
+      y: -3, duration: 5.5, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1.5,
     });
   }, []);
-
   return (
     <img
       ref={ref}
@@ -208,7 +225,7 @@ function FerCharacter() {
       style={{
         position: 'absolute',
         bottom: '0%',
-        left: '52%',        /* Entre Bruno e o painel de escolhas */
+        left: '52%',
         height: '30%',
         width: 'auto',
         zIndex: 13,
@@ -221,76 +238,202 @@ function FerCharacter() {
 
 // ── Painel de Escolhas ─────────────────────────────────────────────────────────
 /**
- * Setas + ícones de Fer empilhados verticalmente.
- * Na referência ficam no centro-direito da tela (não colados à borda),
- * com as setas e ícones bem maiores.
+ * Renderiza as choices de Fernanda como setas + ícones orgânicos.
+ * Animação de entrada staggered com GSAP — sensação de "papel surgindo".
+ * Hover com scale + rotação mínima.
  */
-function ChoiceRows() {
-  const [hovered, setHovered] = useState<number | null>(null);
+interface ChoiceRowsProps {
+  choices: Choice[];
+  onChoose: (choice: Choice) => void;
+}
+
+function ChoiceRows({ choices, onChoose }: ChoiceRowsProps) {
+  const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // ── Entrada animada a cada novo conjunto de choices ────────────────────────
+  useEffect(() => {
+    const els = rowRefs.current.filter(Boolean) as HTMLDivElement[];
+    if (els.length === 0) return;
+
+    // Reset antes de animar (evita posições residuais)
+    gsap.set(els, { opacity: 0, y: 14, rotation: 0 });
+
+    gsap.to(els, {
+      opacity: 1,
+      y: 0,
+      duration: 0.75,
+      stagger: 0.15,
+      ease: 'back.out(1.3)',
+      delay: 0.25,
+    });
+  }, [choices]);
+
+  const handleEnter = (el: HTMLDivElement) => {
+    gsap.to(el, { scale: 1.06, rotation: 1.8, duration: 0.2, ease: 'power1.out' });
+  };
+
+  const handleLeave = (el: HTMLDivElement) => {
+    gsap.to(el, { scale: 1, rotation: 0, duration: 0.28, ease: 'power1.inOut' });
+  };
+
+  const handleClick = (el: HTMLDivElement, choice: Choice) => {
+    const allEls = rowRefs.current.filter(Boolean) as HTMLDivElement[];
+
+    // 1. Leve "pressão" na row clicada
+    gsap.to(el, {
+      scale: 0.92,
+      duration: 0.12,
+      ease: 'power2.in',
+      onComplete: () => {
+        // 2. Fade-out suave de todas as choices antes de avançar
+        gsap.to(allEls, {
+          opacity: 0,
+          y: -10,
+          duration: 0.65,
+          stagger: 0.08,
+          ease: 'power2.in',
+          onComplete: () => {
+            onChoose(choice);
+          },
+        });
+      },
+    });
+  };
 
   return (
     <div
       style={{
         position: 'absolute',
-        top: '28%',          /* Mais para o meio-baixo — como na referência */
-        left: '58%',         /* Centro-direito da tela */
+        top: '28%',
+        left: '58%',
         zIndex: 25,
         display: 'flex',
         flexDirection: 'column',
         gap: 'clamp(6px, 1.3vh, 16px)',
       }}
     >
-      {CHOICES.map((choice, i) => (
-        <div
-          key={i}
-          onMouseEnter={() => setHovered(i)}
-          onMouseLeave={() => setHovered(null)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'clamp(8px, 1.2vw, 16px)',
-            cursor: 'pointer',
-            transition: 'transform 0.18s ease, filter 0.18s ease',
-            transform: hovered === i ? 'translateX(-8px) scale(1.04)' : 'translateX(0) scale(1)',
-            filter: hovered === i ? 'brightness(1.2)' : 'brightness(1)',
-          }}
-        >
-          {/* Seta — tamanho generoso como na referência */}
-          <img
-            src={choice.seta}
-            alt={choice.label}
-            draggable={false}
+      {choices.map((choice, i) => {
+        const assets = CHOICE_ASSETS[i % CHOICE_ASSETS.length];
+        return (
+          <div
+            key={`${choice.text}-${i}`}
+            ref={el => { rowRefs.current[i] = el; }}
+            onClick={e => handleClick(e.currentTarget, choice)}
+            onMouseEnter={e => handleEnter(e.currentTarget)}
+            onMouseLeave={e => handleLeave(e.currentTarget)}
+            title={choice.text}
             style={{
-              height: 'clamp(52px, 7.5vh, 90px)',
-              width: 'auto',
-              filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'clamp(8px, 1.2vw, 16px)',
+              cursor: 'pointer',
+              transformOrigin: 'center left',
             }}
-          />
-          {/* Ícone animado de Fer — mesmo porte que a seta */}
-          <img
-            src={choice.icone}
-            alt={`ícone ${i + 1}`}
-            draggable={false}
-            style={{
-              height: 'clamp(52px, 7.5vh, 90px)',
-              width: 'auto',
-              filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))',
-            }}
-          />
-        </div>
-      ))}
+          >
+            {/* Seta */}
+            <img
+              src={assets.seta}
+              alt={choice.text}
+              draggable={false}
+              style={{
+                height: 'clamp(52px, 7.5vh, 90px)',
+                width: 'auto',
+                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))',
+                pointerEvents: 'none',
+              }}
+            />
+            {/* Ícone animado */}
+            <img
+              src={assets.icone}
+              alt={`ícone ${i + 1}`}
+              draggable={false}
+              style={{
+                height: 'clamp(52px, 7.5vh, 90px)',
+                width: 'auto',
+                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))',
+                pointerEvents: 'none',
+              }}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Tela de fim ────────────────────────────────────────────────────────────────
+function EndOverlay() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    gsap.fromTo(
+      ref.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 2.5, ease: 'power2.out', delay: 0.4 },
+    );
+  }, []);
+  return (
+    <div
+      ref={ref}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(18, 10, 4, 0.55)',
+        backdropFilter: 'blur(2px)',
+        pointerEvents: 'none',
+      }}
+    >
+      <p
+        style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 'clamp(0.75rem, 1.5vw, 1.1rem)',
+          color: 'rgba(248, 230, 195, 0.7)',
+          letterSpacing: '0.18em',
+          textTransform: 'lowercase',
+          fontStyle: 'italic',
+        }}
+      >
+        …
+      </p>
     </div>
   );
 }
 
 // ── Main export ────────────────────────────────────────────────────────────────
 export default function GameUI() {
+  const { current, advance, choose, ended } = useDialogue(1);
+
+  if (!current) return null;
+
+  const hasChoices = !!current.choices?.length;
+
   return (
     <>
-      <Dialbox />
+      {/* Caixa de diálogo — sempre visível */}
+      <Dialbox
+        dialogue={current}
+        onNext={advance}
+        ended={ended}
+      />
+
+      {/* Personagens */}
       <BrunoCharacter />
       <FerCharacter />
-      <ChoiceRows />
+
+      {/* Choices — visíveis apenas quando é a vez de Fernanda */}
+      {hasChoices && !ended && (
+        <ChoiceRows
+          choices={current.choices!}
+          onChoose={choose}
+        />
+      )}
+
+      {/* Tela de encerramento suave */}
+      {ended && <EndOverlay />}
     </>
   );
 }
