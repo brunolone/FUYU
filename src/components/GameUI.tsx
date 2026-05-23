@@ -10,11 +10,12 @@ import nextBtn    from '../assets/novos assets/mensagens/botoes/next.gif';
 
 import seta1 from '../assets/novos assets/setas/sety1.gif';
 import seta2 from '../assets/novos assets/setas/sety2.gif';
-import icf1  from '../assets/novos assets/icones fer/icf1r.gif';
-import icf2  from '../assets/novos assets/icones fer/icf2.gif';
+import icf1  from '../characters/fer/icones fer/FL11.gif';
+import icf2  from '../characters/fer/icones fer/FL2.gif';
 
 // ── State / Data ───────────────────────────────────────────────────────────────
 import { useDialogue }      from '../hooks/useDialogue';
+import { DIALBOX_ASCII }    from '../utils/ascii';
 import type { Choice, Dialogue } from '../utils/sceneData';
 
 // Par seta + ícone para cada choice (2 slots)
@@ -33,21 +34,26 @@ const CHOICE_ASSETS = [
  */
 interface DialboxProps {
   dialogue: Dialogue;
+  previous: Dialogue | null;
   onNext: () => void;
   ended: boolean;
 }
 
-function Dialbox({ dialogue, onNext, ended }: DialboxProps) {
+function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
   const btnRef  = useRef<HTMLImageElement>(null);
   const textRef = useRef<HTMLParagraphElement>(null);
   const boxRef  = useRef<HTMLDivElement>(null);
 
   const hasChoices = !!dialogue.choices?.length;
   const displayText = hasChoices
-    ? '...'
+    ? (previous?.text || '...')
     : ended
     ? '...'
     : dialogue.text;
+  
+  const displaySpeaker = hasChoices
+    ? (previous?.speaker === 'player' ? 'bruno' : previous?.speaker)
+    : (dialogue.speaker === 'player' ? 'bruno' : dialogue.speaker);
 
   // ── Anima texto a cada troca de diálogo ───────────────────────────────────
   useEffect(() => {
@@ -85,24 +91,39 @@ function Dialbox({ dialogue, onNext, ended }: DialboxProps) {
         aspectRatio: '1.78 / 1',
         zIndex: 20,
         overflow: 'visible',
+        containerType: 'size',
       }}
     >
-      {/* Frame animado */}
-      <img
-        src={dialboxGif}
-        alt="caixa de diálogo"
-        draggable={false}
+      {/* Background ASCII */}
+      <div
         style={{
           position: 'absolute',
           inset: 0,
-          width: '100%',
-          height: '100%',
-          display: 'block',
-          objectFit: 'fill',
-          opacity: 0.82,
           zIndex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          backgroundColor: 'rgba(252, 245, 235, 0.85)',
+          backdropFilter: 'blur(4px)',
+          borderRadius: '8px',
+          border: '1px solid rgba(122, 92, 58, 0.15)',
         }}
-      />
+      >
+        <pre
+          style={{
+            margin: 0,
+            pointerEvents: 'none',
+            fontFamily: "'Roboto Mono', monospace",
+            fontSize: '3cqh',
+            lineHeight: '3cqh',
+            color: 'rgba(30, 18, 8, 0.45)',
+            whiteSpace: 'pre',
+          }}
+        >
+          {DIALBOX_ASCII}
+        </pre>
+      </div>
 
       {/* Área de texto */}
       <div
@@ -120,27 +141,27 @@ function Dialbox({ dialogue, onNext, ended }: DialboxProps) {
           gap: '0.35em',
         }}
       >
-        {/* Speaker label — exibido apenas para falas do player */}
-        {!hasChoices && !ended && (
+        {/* Speaker label — exibido para falas e persistido em escolhas */}
+        {!ended && (
           <span
             style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 'clamp(0.45rem, 0.7vw, 0.62rem)',
+              fontFamily: "'Roboto Mono', monospace",
+              fontSize: 'clamp(0.55rem, 0.85vw, 0.75rem)',
               color: '#7a5c3a',
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               marginBottom: '0.15em',
             }}
           >
-            {dialogue.speaker === 'player' ? 'bruno' : dialogue.speaker}
+            {displaySpeaker}
           </span>
         )}
 
         <p
           ref={textRef}
           style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 'clamp(0.6rem, 1vw, 0.85rem)',
+            fontFamily: "'Roboto Mono', monospace",
+            fontSize: 'clamp(0.75rem, 1.25vw, 1.1rem)',
             color: hasChoices ? '#b09070' : '#1e1208',
             lineHeight: 1.75,
             margin: 0,
@@ -389,7 +410,7 @@ function EndOverlay() {
     >
       <p
         style={{
-          fontFamily: "'Inter', sans-serif",
+          fontFamily: "'Roboto Mono', monospace",
           fontSize: 'clamp(0.75rem, 1.5vw, 1.1rem)',
           color: 'rgba(248, 230, 195, 0.7)',
           letterSpacing: '0.18em',
@@ -405,7 +426,7 @@ function EndOverlay() {
 
 // ── Main export ────────────────────────────────────────────────────────────────
 export default function GameUI() {
-  const { current, advance, choose, ended } = useDialogue(1);
+  const { current, previous, advance, choose, ended } = useDialogue(1);
 
   if (!current) return null;
 
@@ -416,13 +437,14 @@ export default function GameUI() {
       {/* Caixa de diálogo — sempre visível */}
       <Dialbox
         dialogue={current}
+        previous={previous}
         onNext={advance}
         ended={ended}
       />
 
       {/* Personagens */}
-      <BrunoCharacter />
-      <FerCharacter />
+      {/* <BrunoCharacter /> */}
+      {/* <FerCharacter /> */}
 
       {/* Choices — visíveis apenas quando é a vez de Fernanda */}
       {hasChoices && !ended && (

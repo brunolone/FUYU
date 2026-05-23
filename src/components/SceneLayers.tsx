@@ -47,7 +47,7 @@ function DustParticles() {
 
 // Importando as imagens do diretório
 import skyImg from '../backgrounds/sky.png';
-import bgImg from '../backgrounds/background.jpg';
+import bgImg from '../backgrounds/backegrounde.png';
 import tree1Img from '../backgrounds/tree1.png';
 import treeImg from '../backgrounds/tree.png';
 import folhaGif from '../backgrounds/folha.gif';
@@ -117,10 +117,7 @@ export default function SceneLayers() {
         className="layer-bg absolute inset-[-5%] bg-cover bg-center will-change-transform"
         style={{ backgroundImage: `url(${bgImg})` }}
       />
-      <div
-        className="layer-tree1 absolute inset-[-5%] bg-cover bg-center will-change-transform"
-        style={{ backgroundImage: `url(${tree1Img})` }}
-      />
+
       <div
         className="layer-tree absolute inset-[-5%] bg-cover bg-center will-change-transform"
         style={{ backgroundImage: `url(${treeImg})` }}

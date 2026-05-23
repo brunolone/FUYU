@@ -10,6 +10,7 @@ interface ChoiceRecord {
 
 interface UseDialogueReturn {
   current: Dialogue | null;
+  previous: Dialogue | null;
   selectedChoices: ChoiceRecord[];
   advance: () => void;
   choose: (choice: Choice) => void;
@@ -20,6 +21,7 @@ interface UseDialogueReturn {
 
 export function useDialogue(startId = 1): UseDialogueReturn {
   const [currentId, setCurrentId] = useState<number | null>(startId);
+  const [previousId, setPreviousId] = useState<number | null>(null);
   const [selectedChoices, setSelectedChoices] = useState<ChoiceRecord[]>([]);
   const [ended, setEnded] = useState(false);
 
@@ -27,9 +29,14 @@ export function useDialogue(startId = 1): UseDialogueReturn {
     ? (dialogues.find(d => d.id === currentId) ?? null)
     : null;
 
+  const previous = previousId != null
+    ? (dialogues.find(d => d.id === previousId) ?? null)
+    : null;
+
   // Avança para a próxima fala (diálogos sem choices)
   const advance = useCallback(() => {
     if (!current) return;
+    setPreviousId(current.id);
     if (current.next != null) {
       setCurrentId(current.next);
     } else {
@@ -40,6 +47,7 @@ export function useDialogue(startId = 1): UseDialogueReturn {
   // Registra escolha e avança (diálogos com choices)
   const choose = useCallback((choice: Choice) => {
     if (!current) return;
+    setPreviousId(current.id);
     setSelectedChoices(prev => [
       ...prev,
       { dialogueId: current.id, choiceText: choice.text },
@@ -51,5 +59,5 @@ export function useDialogue(startId = 1): UseDialogueReturn {
     }
   }, [current]);
 
-  return { current, selectedChoices, advance, choose, ended };
+  return { current, previous, selectedChoices, advance, choose, ended };
 }
