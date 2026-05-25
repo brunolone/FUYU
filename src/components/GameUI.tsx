@@ -2,36 +2,28 @@ import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 
 // ── Asset imports ──────────────────────────────────────────────────────────────
-import brunoImg   from '../characters/bruno.png';
-import ferrImg    from '../characters/ferr.png';
-
-import dialboxGif from '../assets/novos assets/mensagens/dialbox.gif';
-import nextBtn    from '../assets/novos assets/mensagens/botoes/next.gif';
-
-import seta1 from '../assets/novos assets/setas/sety1.gif';
-import seta2 from '../assets/novos assets/setas/sety2.gif';
-import icf1  from '../characters/fer/icones fer/FL11.gif';
-import icf2  from '../characters/fer/icones fer/FL2.gif';
+import opAborrecida from '../characters/fer/novas op/aborrecida.gif';
+import opAinda from '../characters/fer/novas op/ainda.gif';
+import opBrava from '../characters/fer/novas op/brava.gif';
+import opHehe from '../characters/fer/novas op/hehe.gif';
+import opQue from '../characters/fer/novas op/que (2).gif';
+import neyGif from '../backgrounds/ney.gif';
+import finalGif from './final.gif';
 
 // ── State / Data ───────────────────────────────────────────────────────────────
 import { useDialogue }      from '../hooks/useDialogue';
 import { DIALBOX_ASCII }    from '../utils/ascii';
 import type { Choice, Dialogue } from '../utils/sceneData';
 
-// Par seta + ícone para cada choice (2 slots)
-const CHOICE_ASSETS = [
-  { seta: seta1, icone: icf1 },
-  { seta: seta2, icone: icf2 },
-];
+const EXPRESSION_GIFS = {
+  aborrecida: opAborrecida,
+  ainda: opAinda,
+  brava: opBrava,
+  hehe: opHehe,
+  que: opQue,
+};
 
 // ── Dialbox ────────────────────────────────────────────────────────────────────
-/**
- * Caixa de diálogo no canto superior esquerdo.
- * - Mostra o texto da fala atual.
- * - Botão "Próximo" aparece apenas quando NÃO há choices.
- * - Quando há choices, o dialbox exibe "..." discreto.
- * - Animação GSAP de fade + slide em cada troca de diálogo.
- */
 interface DialboxProps {
   dialogue: Dialogue;
   previous: Dialogue | null;
@@ -40,7 +32,7 @@ interface DialboxProps {
 }
 
 function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
-  const btnRef  = useRef<HTMLImageElement>(null);
+  const btnRef  = useRef<HTMLButtonElement>(null);
   const textRef = useRef<HTMLParagraphElement>(null);
   const boxRef  = useRef<HTMLDivElement>(null);
 
@@ -55,18 +47,17 @@ function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
     ? (previous?.speaker === 'player' ? 'bruno' : previous?.speaker)
     : (dialogue.speaker === 'player' ? 'bruno' : dialogue.speaker);
 
-  // ── Anima texto a cada troca de diálogo ───────────────────────────────────
   useEffect(() => {
     const el = textRef.current;
-    if (!el) return;
+    if (!el || hasChoices) return;
+
     gsap.fromTo(
       el,
       { opacity: 0, y: 10 },
-      { opacity: 1, y: 0, duration: 1.0, ease: 'power2.out', delay: 0.1 },
+      { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.1 },
     );
-  }, [dialogue.id]);
+  }, [dialogue.id, hasChoices]);
 
-  // ── Pulsar suave no botão Próximo ─────────────────────────────────────────
   useEffect(() => {
     const btn = btnRef.current;
     if (!btn || hasChoices) return;
@@ -94,7 +85,7 @@ function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
         containerType: 'size',
       }}
     >
-      {/* Background ASCII */}
+      {/* Background ASCII com Glassmorphism */}
       <div
         style={{
           position: 'absolute',
@@ -104,10 +95,11 @@ function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
           alignItems: 'center',
           justifyContent: 'center',
           overflow: 'hidden',
-          backgroundColor: 'rgba(252, 245, 235, 0.85)',
-          backdropFilter: 'blur(4px)',
-          borderRadius: '8px',
-          border: '1px solid rgba(122, 92, 58, 0.15)',
+          backgroundColor: 'rgba(252, 245, 235, 0.82)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: '16px',
+          border: '1.5px solid rgba(122, 92, 58, 0.25)',
+          boxShadow: '0 12px 36px rgba(0, 0, 0, 0.25)',
         }}
       >
         <pre
@@ -141,16 +133,18 @@ function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
           gap: '0.35em',
         }}
       >
-        {/* Speaker label — exibido para falas e persistido em escolhas */}
+        {/* Speaker label */}
         {!ended && (
           <span
             style={{
               fontFamily: "'Roboto Mono', monospace",
-              fontSize: 'clamp(0.55rem, 0.85vw, 0.75rem)',
-              color: '#7a5c3a',
-              letterSpacing: '0.12em',
+              fontSize: 'clamp(0.6rem, 1vw, 0.85rem)',
+              color: '#9c6f44',
+              fontWeight: 'bold',
+              letterSpacing: '0.15em',
               textTransform: 'uppercase',
               marginBottom: '0.15em',
+              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
             }}
           >
             {displaySpeaker}
@@ -161,108 +155,59 @@ function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
           ref={textRef}
           style={{
             fontFamily: "'Roboto Mono', monospace",
-            fontSize: 'clamp(0.75rem, 1.25vw, 1.1rem)',
-            color: hasChoices ? '#b09070' : '#1e1208',
-            lineHeight: 1.75,
+            fontSize: 'clamp(0.8rem, 1.35vw, 1.25rem)',
+            color: '#1e1208',
+            lineHeight: 1.65,
             margin: 0,
             letterSpacing: '0.015em',
             whiteSpace: 'pre-wrap',
-            fontStyle: hasChoices ? 'italic' : 'normal',
+            fontWeight: 500,
           }}
         >
           {displayText}
         </p>
       </div>
 
-      {/* Botão Próximo — só aparece quando não há choices */}
+      {/* Botão Próximo */}
       {!hasChoices && !ended && (
-        <img
+        <button
           ref={btnRef}
-          src={nextBtn}
-          alt="avançar"
-          draggable={false}
           onClick={onNext}
           style={{
             position: 'absolute',
-            bottom: '-4%',
+            bottom: '-6%',
             right: '-2%',
-            height: 'clamp(38px, 5.5vh, 62px)',
-            width: 'auto',
+            padding: '10px 28px',
+            backgroundColor: '#ffffff',
+            color: '#7a5c3a',
+            fontFamily: "'Roboto Mono', monospace",
+            fontSize: 'clamp(0.75rem, 1.25vw, 1.1rem)',
+            fontWeight: 'bold',
+            border: '2px solid rgba(122, 92, 58, 0.45)',
+            borderRadius: '12px',
             cursor: 'pointer',
             zIndex: 30,
             transformOrigin: 'center',
-            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))',
+            boxShadow: '0 8px 20px rgba(0,0,0,0.18)',
+            transition: 'background-color 0.2s, border-color 0.2s, color 0.2s',
           }}
-        />
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#7a5c3a';
+            e.currentTarget.style.color = '#ffffff';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ffffff';
+            e.currentTarget.style.color = '#7a5c3a';
+          }}
+        >
+          Próximo
+        </button>
       )}
     </div>
   );
 }
 
-// ── Personagem Bruno ───────────────────────────────────────────────────────────
-function BrunoCharacter() {
-  const ref = useRef<HTMLImageElement>(null);
-  useEffect(() => {
-    if (!ref.current) return;
-    gsap.to(ref.current, {
-      y: -5, duration: 4.5, repeat: -1, yoyo: true, ease: 'sine.inOut',
-    });
-  }, []);
-  return (
-    <img
-      ref={ref}
-      src={brunoImg}
-      alt="Bruno"
-      draggable={false}
-      style={{
-        position: 'absolute',
-        bottom: '0%',
-        left: '33%',
-        height: '62%',
-        width: 'auto',
-        zIndex: 15,
-        filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.4))',
-        transformOrigin: 'bottom center',
-      }}
-    />
-  );
-}
-
-// ── Personagem Fer ─────────────────────────────────────────────────────────────
-function FerCharacter() {
-  const ref = useRef<HTMLImageElement>(null);
-  useEffect(() => {
-    if (!ref.current) return;
-    gsap.to(ref.current, {
-      y: -3, duration: 5.5, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1.5,
-    });
-  }, []);
-  return (
-    <img
-      ref={ref}
-      src={ferrImg}
-      alt="Fer"
-      draggable={false}
-      style={{
-        position: 'absolute',
-        bottom: '0%',
-        left: '52%',
-        height: '30%',
-        width: 'auto',
-        zIndex: 13,
-        filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.35)) brightness(0.88)',
-        transformOrigin: 'bottom center',
-      }}
-    />
-  );
-}
-
 // ── Painel de Escolhas ─────────────────────────────────────────────────────────
-/**
- * Renderiza as choices de Fernanda como setas + ícones orgânicos.
- * Animação de entrada staggered com GSAP — sensação de "papel surgindo".
- * Hover com scale + rotação mínima.
- */
 interface ChoiceRowsProps {
   choices: Choice[];
   onChoose: (choice: Choice) => void;
@@ -271,47 +216,44 @@ interface ChoiceRowsProps {
 function ChoiceRows({ choices, onChoose }: ChoiceRowsProps) {
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // ── Entrada animada a cada novo conjunto de choices ────────────────────────
   useEffect(() => {
     const els = rowRefs.current.filter(Boolean) as HTMLDivElement[];
     if (els.length === 0) return;
 
-    // Reset antes de animar (evita posições residuais)
-    gsap.set(els, { opacity: 0, y: 14, rotation: 0 });
+    gsap.set(els, { opacity: 0, y: 20, scale: 0.95 });
 
     gsap.to(els, {
       opacity: 1,
       y: 0,
-      duration: 0.75,
-      stagger: 0.15,
-      ease: 'back.out(1.3)',
-      delay: 0.25,
+      scale: 1,
+      duration: 0.65,
+      stagger: 0.12,
+      ease: 'back.out(1.4)',
+      delay: 0.15,
     });
   }, [choices]);
 
   const handleEnter = (el: HTMLDivElement) => {
-    gsap.to(el, { scale: 1.06, rotation: 1.8, duration: 0.2, ease: 'power1.out' });
+    gsap.to(el, { scale: 1.05, y: -2, boxShadow: '0 10px 25px rgba(0,0,0,0.2)', duration: 0.22, ease: 'power1.out' });
   };
 
   const handleLeave = (el: HTMLDivElement) => {
-    gsap.to(el, { scale: 1, rotation: 0, duration: 0.28, ease: 'power1.inOut' });
+    gsap.to(el, { scale: 1, y: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', duration: 0.28, ease: 'power1.inOut' });
   };
 
   const handleClick = (el: HTMLDivElement, choice: Choice) => {
     const allEls = rowRefs.current.filter(Boolean) as HTMLDivElement[];
 
-    // 1. Leve "pressão" na row clicada
     gsap.to(el, {
-      scale: 0.92,
-      duration: 0.12,
+      scale: 0.94,
+      duration: 0.1,
       ease: 'power2.in',
       onComplete: () => {
-        // 2. Fade-out suave de todas as choices antes de avançar
         gsap.to(allEls, {
           opacity: 0,
-          y: -10,
-          duration: 0.65,
-          stagger: 0.08,
+          y: -15,
+          duration: 0.5,
+          stagger: 0.06,
           ease: 'power2.in',
           onComplete: () => {
             onChoose(choice);
@@ -325,16 +267,16 @@ function ChoiceRows({ choices, onChoose }: ChoiceRowsProps) {
     <div
       style={{
         position: 'absolute',
-        top: '28%',
+        top: '26%',
         left: '58%',
         zIndex: 25,
         display: 'flex',
         flexDirection: 'column',
-        gap: 'clamp(6px, 1.3vh, 16px)',
+        gap: 'clamp(8px, 1.6vh, 20px)',
       }}
     >
       {choices.map((choice, i) => {
-        const assets = CHOICE_ASSETS[i % CHOICE_ASSETS.length];
+        const icon = EXPRESSION_GIFS[choice.reaction];
         return (
           <div
             key={`${choice.text}-${i}`}
@@ -342,39 +284,45 @@ function ChoiceRows({ choices, onChoose }: ChoiceRowsProps) {
             onClick={e => handleClick(e.currentTarget, choice)}
             onMouseEnter={e => handleEnter(e.currentTarget)}
             onMouseLeave={e => handleLeave(e.currentTarget)}
-            title={choice.text}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 'clamp(8px, 1.2vw, 16px)',
+              gap: '16px',
               cursor: 'pointer',
               transformOrigin: 'center left',
+              padding: '12px 20px',
+              backgroundColor: 'rgba(252, 245, 235, 0.88)',
+              border: '1.5px solid rgba(122, 92, 58, 0.3)',
+              borderRadius: '16px',
+              boxShadow: '0 6px 16px rgba(0,0,0,0.12)',
+              backdropFilter: 'blur(8px)',
+              transition: 'border-color 0.2s',
             }}
           >
-            {/* Seta */}
+            {/* Ícone animado da reação */}
             <img
-              src={assets.seta}
-              alt={choice.text}
+              src={icon}
+              alt={`reacao-${choice.reaction}`}
               draggable={false}
               style={{
-                height: 'clamp(52px, 7.5vh, 90px)',
+                height: 'clamp(46px, 7vh, 70px)',
                 width: 'auto',
-                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))',
+                filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.18))',
                 pointerEvents: 'none',
+                borderRadius: '8px',
               }}
             />
-            {/* Ícone animado */}
-            <img
-              src={assets.icone}
-              alt={`ícone ${i + 1}`}
-              draggable={false}
+            {/* Texto da choice */}
+            <span
               style={{
-                height: 'clamp(52px, 7.5vh, 90px)',
-                width: 'auto',
-                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))',
-                pointerEvents: 'none',
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: 'clamp(0.85rem, 1.25vw, 1.2rem)',
+                color: '#1e1208',
+                fontWeight: 600,
               }}
-            />
+            >
+              {choice.text}
+            </span>
           </div>
         );
       })}
@@ -383,8 +331,13 @@ function ChoiceRows({ choices, onChoose }: ChoiceRowsProps) {
 }
 
 // ── Tela de fim ────────────────────────────────────────────────────────────────
-function EndOverlay() {
+interface EndOverlayProps {
+  finalChoiceText: string | null;
+}
+
+function EndOverlay({ finalChoiceText }: EndOverlayProps) {
   const ref = useRef<HTMLDivElement>(null);
+  
   useEffect(() => {
     if (!ref.current) return;
     gsap.fromTo(
@@ -393,6 +346,10 @@ function EndOverlay() {
       { opacity: 1, duration: 2.5, ease: 'power2.out', delay: 0.4 },
     );
   }, []);
+
+  const isGreen = finalChoiceText?.includes("verde");
+  const isBlue = finalChoiceText?.includes("tom de azul");
+
   return (
     <div
       ref={ref}
@@ -401,21 +358,73 @@ function EndOverlay() {
         inset: 0,
         zIndex: 50,
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'rgba(18, 10, 4, 0.55)',
-        backdropFilter: 'blur(2px)',
+        background: 'rgba(18, 10, 4, 0.75)',
+        backdropFilter: 'blur(3px)',
         pointerEvents: 'none',
+        gap: '24px',
       }}
     >
+      {/* Caso escolha verde, mostra a imagem do ney no centro */}
+      {isGreen && (
+        <img
+          src={neyGif}
+          alt="Ney"
+          style={{
+            maxWidth: '480px',
+            width: '85%',
+            height: 'auto',
+            borderRadius: '24px',
+            boxShadow: '0 16px 48px rgba(0, 0, 0, 0.65)',
+            filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.45))',
+          }}
+        />
+      )}
+
+      {/* Caso escolha azul, mostra o gif do celular recortado (final.gif) no centro com a mensagem */}
+      {isBlue && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+          <img
+            src={finalGif}
+            alt="Celular"
+            style={{
+              maxWidth: '480px',
+              width: '85%',
+              height: 'auto',
+              borderRadius: '24px',
+              boxShadow: '0 16px 48px rgba(0, 0, 0, 0.65)',
+              filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.45))',
+            }}
+          />
+          <p
+            style={{
+              fontFamily: "'Roboto Mono', monospace",
+              fontSize: 'clamp(1rem, 2vw, 1.45rem)',
+              color: '#f8e6c3',
+              textAlign: 'center',
+              fontWeight: 600,
+              letterSpacing: '0.05em',
+              margin: '10px 0 0 0',
+              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)',
+            }}
+          >
+            "vou continuar tentando na dm entao, fica ligada"
+          </p>
+        </div>
+      )}
+      
+      {/* Efeito dos 3 pontos no rodapé/centro */}
       <p
         style={{
           fontFamily: "'Roboto Mono', monospace",
-          fontSize: 'clamp(0.75rem, 1.5vw, 1.1rem)',
+          fontSize: 'clamp(0.9rem, 1.8vw, 1.3rem)',
           color: 'rgba(248, 230, 195, 0.7)',
           letterSpacing: '0.18em',
           textTransform: 'lowercase',
           fontStyle: 'italic',
+          margin: 0,
         }}
       >
         …
@@ -426,15 +435,17 @@ function EndOverlay() {
 
 // ── Main export ────────────────────────────────────────────────────────────────
 export default function GameUI() {
-  const { current, previous, advance, choose, ended } = useDialogue(1);
+  const { current, previous, advance, choose, ended, selectedChoices } = useDialogue(1);
 
   if (!current) return null;
 
   const hasChoices = !!current.choices?.length;
 
+  const finalChoiceText = selectedChoices.find(c => c.dialogueId === 14)?.choiceText ?? null;
+
   return (
     <>
-      {/* Caixa de diálogo — sempre visível */}
+      {/* Caixa de diálogo */}
       <Dialbox
         dialogue={current}
         previous={previous}
@@ -442,11 +453,7 @@ export default function GameUI() {
         ended={ended}
       />
 
-      {/* Personagens */}
-      {/* <BrunoCharacter /> */}
-      {/* <FerCharacter /> */}
-
-      {/* Choices — visíveis apenas quando é a vez de Fernanda */}
+      {/* Choices — com GIFs correspondentes nos botões */}
       {hasChoices && !ended && (
         <ChoiceRows
           choices={current.choices!}
@@ -454,8 +461,8 @@ export default function GameUI() {
         />
       )}
 
-      {/* Tela de encerramento suave */}
-      {ended && <EndOverlay />}
+      {/* Tela de encerramento de tela apagando com 3 pontos (e ney.gif se for verde) */}
+      {ended && <EndOverlay finalChoiceText={finalChoiceText} />}
     </>
   );
 }

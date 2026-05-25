@@ -3,6 +3,7 @@
 export interface Choice {
   text: string;
   next: number | null;
+  reaction: 'aborrecida' | 'ainda' | 'brava' | 'hehe' | 'que';
 }
 
 export interface Dialogue {
@@ -35,8 +36,8 @@ export const dialogues: Dialogue[] = [
     speaker: 'fernanda',
     text: '',
     choices: [
-      { text: 'Oi...', next: 3 },
-      { text: 'Oii', next: 3 },
+      { text: 'Oi...', next: 3, reaction: 'aborrecida' },
+      { text: 'Oii', next: 3, reaction: 'hehe' },
     ],
   },
 
@@ -54,8 +55,8 @@ export const dialogues: Dialogue[] = [
     speaker: 'fernanda',
     text: '',
     choices: [
-      { text: 'entendeu errado...', next: 5 },
-      { text: 'talvez esteja certo...', next: 5 },
+      { text: 'entendeu errado...', next: 5, reaction: 'brava' },
+      { text: 'talvez esteja certo...', next: 5, reaction: 'ainda' },
     ],
   },
 
@@ -73,8 +74,8 @@ export const dialogues: Dialogue[] = [
     speaker: 'fernanda',
     text: '',
     choices: [
-      { text: 'Nunca assisti', next: 7 },
-      { text: 'Terminei de assistir também', next: 7 },
+      { text: 'Nunca assisti', next: 7, reaction: 'que' },
+      { text: 'Terminei de assistir também', next: 7, reaction: 'hehe' },
     ],
   },
 
@@ -124,8 +125,8 @@ export const dialogues: Dialogue[] = [
     speaker: 'fernanda',
     text: '',
     choices: [
-      { text: 'já fizeram tudo isso', next: 13 },
-      { text: 'roda gigante?', next: 13 },
+      { text: 'já fizeram tudo isso', next: 13, reaction: 'aborrecida' },
+      { text: 'roda gigante?', next: 13, reaction: 'que' },
     ],
   },
 
@@ -143,8 +144,8 @@ export const dialogues: Dialogue[] = [
     speaker: 'fernanda',
     text: '',
     choices: [
-      { text: 'Minha cor preferida é verde.', next: null },
-      { text: 'Ainda não chegou no meu tom de azul.', next: null },
+      { text: 'Minha cor preferida é verde.', next: null, reaction: 'que' },
+      { text: 'Ainda nao chegou no meu tom de azul.', next: null, reaction: 'hehe' },
     ],
   },
 ];
