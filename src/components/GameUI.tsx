@@ -73,6 +73,103 @@ function Dialbox({ dialogue, previous, onNext, ended, isMobile }: DialboxProps) 
     return () => { tween.kill(); };
   }, [hasChoices, dialogue.id]);
 
+  // ── Mobile: layout de fluxo — altura cresce com o conteúdo ────────────────
+  if (isMobile) {
+    return (
+      <div
+        ref={boxRef}
+        style={{
+          position: 'absolute',
+          top: '3%',
+          left: '4%',
+          width: '92%',
+          zIndex: 20,
+          // Glassmorphism aplicado diretamente — sem aspectRatio fixo
+          backgroundColor: 'rgba(252, 245, 235, 0.82)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: '16px',
+          border: '1.5px solid rgba(122, 92, 58, 0.25)',
+          boxShadow: '0 12px 36px rgba(0, 0, 0, 0.25)',
+          padding: '14px 18px 16px 18px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.4em',
+        }}
+      >
+        {/* Speaker label */}
+        {!ended && (
+          <span
+            style={{
+              fontFamily: "'Roboto Mono', monospace",
+              fontSize: 'clamp(0.6rem, 3vw, 0.85rem)',
+              color: '#9c6f44',
+              fontWeight: 'bold',
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+            }}
+          >
+            {displaySpeaker}
+          </span>
+        )}
+
+        <p
+          ref={textRef}
+          style={{
+            fontFamily: "'Roboto Mono', monospace",
+            fontSize: 'clamp(0.75rem, 3.8vw, 1.05rem)',
+            color: '#1e1208',
+            lineHeight: 1.5,
+            margin: 0,
+            letterSpacing: '0.015em',
+            whiteSpace: 'pre-wrap',
+            fontWeight: 500,
+          }}
+        >
+          {displayText}
+        </p>
+
+        {/* Botão Próximo — inline, abaixo do texto */}
+        {!hasChoices && !ended && (
+          <button
+            ref={btnRef}
+            onClick={onNext}
+            onMouseEnter={() => setIsBtnHovered(true)}
+            onMouseLeave={() => setIsBtnHovered(false)}
+            style={{
+              alignSelf: 'flex-end',
+              marginTop: '6px',
+              padding: '8px 18px',
+              backgroundColor: isBtnHovered ? '#7a5c3a' : 'rgba(252, 245, 235, 0.95)',
+              color: isBtnHovered ? '#ffffff' : '#7a5c3a',
+              fontFamily: "'Roboto Mono', monospace",
+              fontSize: 'clamp(0.7rem, 3vw, 0.9rem)',
+              fontWeight: 'bold',
+              border: '2px solid rgba(122, 92, 58, 0.55)',
+              borderRadius: '24px',
+              cursor: 'pointer',
+              zIndex: 30,
+              transformOrigin: 'center',
+              boxShadow: isBtnHovered ? '0 10px 24px rgba(122, 92, 58, 0.35)' : '0 8px 20px rgba(0,0,0,0.18)',
+              transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <span style={{ display: 'inline-block', fontSize: '0.95rem', transform: isBtnHovered ? 'rotate(180deg) scale(1.15)' : 'rotate(0deg) scale(1)', transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)', color: isBtnHovered ? '#fcf5eb' : '#9c6f44' }}>✿</span>
+            <span style={{ opacity: 0.6, fontSize: '0.75rem', letterSpacing: '-1.5px', userSelect: 'none' }}>──</span>
+            <span style={{ fontSize: '0.8rem' }}>Próximo</span>
+            <div style={{ display: 'flex', alignItems: 'center', transform: isBtnHovered ? 'translateX(5px)' : 'translateX(0px)', transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
+              <span style={{ opacity: 0.6, fontSize: '0.75rem', letterSpacing: '-1.5px', userSelect: 'none', marginRight: '2px' }}>──</span>
+              <span style={{ fontSize: '0.9rem', fontWeight: 'bold', lineHeight: 1 }}>➔</span>
+            </div>
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       ref={boxRef}
