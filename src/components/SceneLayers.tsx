@@ -69,6 +69,9 @@ export default function SceneLayers() {
     const tree1 = root.querySelector('.layer-tree1');
     const tree = root.querySelector('.layer-tree');
 
+    // Espelha horizontalmente os backgrounds
+    gsap.set([sky, bg, tree].filter(Boolean), { scaleX: -1 });
+
     // Parallax interativo suave com o mouse
     const handleMouseMove = (e: MouseEvent) => {
       // Normalizando as coordenadas de -1 a 1
