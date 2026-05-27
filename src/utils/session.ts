@@ -30,20 +30,12 @@ export function createSessionReport(
   };
 }
 
-// ── Salva a sessão ─────────────────────────────────────────────────────────────
-//
-// Atualmente salva apenas em localStorage (frontend puro).
-// Para integrar com Supabase futuramente, substitua o corpo desta função:
-//
-//   const { error } = await supabase.from('sessions').insert(report);
-//   if (error) throw error;
-//
+// ── Salva a sessão no localStorage ────────────────────────────────────────────
 
 export async function saveSession(report: SessionReport): Promise<void> {
   try {
     localStorage.setItem('fuyu-session-report', JSON.stringify(report));
   } catch (error) {
-    // localStorage indisponível (modo privado ou storage cheio) — ignora silenciosamente
     console.warn('[FUYU] Não foi possível salvar sessão no localStorage:', error);
   }
 }
@@ -56,5 +48,31 @@ export function loadSession(): SessionReport | null {
     return raw ? (JSON.parse(raw) as SessionReport) : null;
   } catch {
     return null;
+  }
+}
+
+// ── Salva a resposta final no Supabase ────────────────────────────────────────
+
+export interface FinalResponse {
+  escolha_final: string;
+  todas_escolhas: { dialogueId: number; choiceText: string }[];
+}
+
+export async function saveFinalResponse(data: FinalResponse): Promise<void> {
+  try {
+    const { supabase } = await import('./supabase');
+    const { error } = await supabase.from('responses').insert({
+      escolha_final:  data.escolha_final,
+      todas_escolhas: data.todas_escolhas,
+    });
+
+    if (error) {
+      console.warn('[FUYU] Supabase insert error:', error.message);
+      // fallback: salva localmente se Supabase falhar
+      localStorage.setItem('fuyu-pending-response', JSON.stringify(data));
+    }
+  } catch (err) {
+    console.warn('[FUYU] Falha ao conectar ao Supabase:', err);
+    localStorage.setItem('fuyu-pending-response', JSON.stringify(data));
   }
 }

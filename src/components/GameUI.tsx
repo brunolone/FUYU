@@ -13,6 +13,7 @@ import finalGif from './final.gif';
 // ── State / Data ───────────────────────────────────────────────────────────────
 import { useDialogue }      from '../hooks/useDialogue';
 import { DIALBOX_ASCII }    from '../utils/ascii';
+import { saveFinalResponse } from '../utils/session';
 import type { Choice, Dialogue } from '../utils/sceneData';
 
 const EXPRESSION_GIFS = {
@@ -598,6 +599,15 @@ export default function GameUI() {
   const hasChoices = !!current.choices?.length;
 
   const finalChoiceText = selectedChoices.find(c => c.dialogueId === 15)?.choiceText ?? null;
+
+  // ── Salva no Supabase quando o jogo termina ────────────────────────────────
+  useEffect(() => {
+    if (!ended || !finalChoiceText) return;
+    saveFinalResponse({
+      escolha_final:  finalChoiceText,
+      todas_escolhas: selectedChoices,
+    });
+  }, [ended, finalChoiceText]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
