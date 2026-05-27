@@ -1,8 +1,11 @@
 import { useState, useCallback } from 'react';
 
-import cartaTotal from '../assets/novos assets/cartatotal.png';
-import cartaTop   from '../assets/novos assets/cartatop.png';
-import cartaBot   from '../assets/novos assets/cartabot.png';
+// @ts-expect-error — vite-imagetools returns string URL with ?format query
+import cartaTotal from '../assets/novos assets/cartatotal.png?format=webp&quality=85';
+// @ts-expect-error
+import cartaTop   from '../assets/novos assets/cartatop.png?format=webp&quality=85';
+// @ts-expect-error
+import cartaBot   from '../assets/novos assets/cartabot.png?format=webp&quality=85';
 import { playBGM } from '../utils/audio';
 
 

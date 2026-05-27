@@ -46,11 +46,15 @@ function DustParticles() {
 }
 
 // Importando as imagens do diretório
-import skyImg from '../backgrounds/sky.png';
-import bgImg from '../backgrounds/backegrounde.png';
-import tree1Img from '../backgrounds/tree1.png';
-import treeImg from '../backgrounds/tree.png';
-import folhaGif from '../backgrounds/folha.gif';
+// @ts-expect-error — vite-imagetools returns string URL with ?format query
+import skyImg from '../backgrounds/sky.png?format=webp&quality=80';
+// @ts-expect-error
+import bgImg from '../backgrounds/backegrounde.png?format=webp&quality=75';
+// @ts-expect-error
+import tree1Img from '../backgrounds/tree1.png?format=webp&quality=80';
+// @ts-expect-error
+import treeImg from '../backgrounds/tree.png?format=webp&quality=80';
+import folhaGif from '../backgrounds/folha.gif'; // GIF animado — não converter
 
 export default function SceneLayers() {
   const rootRef = useRef<HTMLDivElement | null>(null);
