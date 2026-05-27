@@ -62,13 +62,12 @@ export async function saveFinalResponse(data: FinalResponse): Promise<void> {
   try {
     const { supabase } = await import('./supabase');
     const { error } = await supabase.from('responses').insert({
-      escolha_final:  data.escolha_final,
-      todas_escolhas: data.todas_escolhas,
+      final_state: data.escolha_final,
+      choices:     data.todas_escolhas,
     });
 
     if (error) {
       console.warn('[FUYU] Supabase insert error:', error.message);
-      // fallback: salva localmente se Supabase falhar
       localStorage.setItem('fuyu-pending-response', JSON.stringify(data));
     }
   } catch (err) {
@@ -76,3 +75,4 @@ export async function saveFinalResponse(data: FinalResponse): Promise<void> {
     localStorage.setItem('fuyu-pending-response', JSON.stringify(data));
   }
 }
+
