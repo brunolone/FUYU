@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import gsap from 'gsap';
 
 // ── Asset imports ──────────────────────────────────────────────────────────────
@@ -29,12 +29,14 @@ interface DialboxProps {
   previous: Dialogue | null;
   onNext: () => void;
   ended: boolean;
+  isMobile: boolean;
 }
 
-function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
+function Dialbox({ dialogue, previous, onNext, ended, isMobile }: DialboxProps) {
   const btnRef  = useRef<HTMLButtonElement>(null);
   const textRef = useRef<HTMLParagraphElement>(null);
   const boxRef  = useRef<HTMLDivElement>(null);
+  const [isBtnHovered, setIsBtnHovered] = useState(false);
 
   const hasChoices = !!dialogue.choices?.length;
   const displayText = hasChoices
@@ -77,9 +79,9 @@ function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
       style={{
         position: 'absolute',
         top: '3%',
-        left: '1.5%',
-        width: '44%',
-        aspectRatio: '1.78 / 1',
+        left: isMobile ? '4%' : '1.5%',
+        width: isMobile ? '92%' : '44%',
+        aspectRatio: isMobile ? '2.4 / 1' : '1.78 / 1',
         zIndex: 20,
         overflow: 'visible',
         containerType: 'size',
@@ -138,7 +140,7 @@ function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
           <span
             style={{
               fontFamily: "'Roboto Mono', monospace",
-              fontSize: 'clamp(0.6rem, 1vw, 0.85rem)',
+              fontSize: isMobile ? 'clamp(0.6rem, 3vw, 0.85rem)' : 'clamp(0.6rem, 1vw, 0.85rem)',
               color: '#9c6f44',
               fontWeight: 'bold',
               letterSpacing: '0.15em',
@@ -155,9 +157,9 @@ function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
           ref={textRef}
           style={{
             fontFamily: "'Roboto Mono', monospace",
-            fontSize: 'clamp(0.8rem, 1.35vw, 1.25rem)',
+            fontSize: isMobile ? 'clamp(0.75rem, 3.8vw, 1.05rem)' : 'clamp(0.8rem, 1.35vw, 1.25rem)',
             color: '#1e1208',
-            lineHeight: 1.65,
+            lineHeight: isMobile ? 1.4 : 1.65,
             margin: 0,
             letterSpacing: '0.015em',
             whiteSpace: 'pre-wrap',
@@ -173,34 +175,60 @@ function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
         <button
           ref={btnRef}
           onClick={onNext}
+          onMouseEnter={() => setIsBtnHovered(true)}
+          onMouseLeave={() => setIsBtnHovered(false)}
           style={{
             position: 'absolute',
-            bottom: '-6%',
-            right: '-2%',
-            padding: '10px 28px',
-            backgroundColor: '#ffffff',
-            color: '#7a5c3a',
+            bottom: isMobile ? '-14px' : '-6%',
+            right: isMobile ? '10px' : '-2%',
+            padding: isMobile ? '8px 18px' : '10px 24px',
+            backgroundColor: isBtnHovered ? '#7a5c3a' : 'rgba(252, 245, 235, 0.95)',
+            color: isBtnHovered ? '#ffffff' : '#7a5c3a',
             fontFamily: "'Roboto Mono', monospace",
-            fontSize: 'clamp(0.75rem, 1.25vw, 1.1rem)',
+            fontSize: isMobile ? 'clamp(0.7rem, 3vw, 0.9rem)' : 'clamp(0.75rem, 1.25vw, 1.1rem)',
             fontWeight: 'bold',
-            border: '2px solid rgba(122, 92, 58, 0.45)',
-            borderRadius: '12px',
+            border: '2px solid rgba(122, 92, 58, 0.55)',
+            borderRadius: '24px',
             cursor: 'pointer',
             zIndex: 30,
             transformOrigin: 'center',
-            boxShadow: '0 8px 20px rgba(0,0,0,0.18)',
-            transition: 'background-color 0.2s, border-color 0.2s, color 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#7a5c3a';
-            e.currentTarget.style.color = '#ffffff';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#ffffff';
-            e.currentTarget.style.color = '#7a5c3a';
+            boxShadow: isBtnHovered ? '0 10px 24px rgba(122, 92, 58, 0.35)' : '0 8px 20px rgba(0,0,0,0.18)',
+            transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: isMobile ? '4px' : '8px',
           }}
         >
-          Próximo
+          {/* Flor decorativa à esquerda */}
+          <span
+            style={{
+              display: 'inline-block',
+              fontSize: isMobile ? '0.95rem' : '1.25rem',
+              transform: isBtnHovered ? 'rotate(180deg) scale(1.15)' : 'rotate(0deg) scale(1)',
+              transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              color: isBtnHovered ? '#fcf5eb' : '#9c6f44',
+            }}
+          >
+            ✿
+          </span>
+          
+          {/* Haste da seta */}
+          <span style={{ opacity: 0.6, fontSize: isMobile ? '0.75rem' : '0.9rem', letterSpacing: '-1.5px', userSelect: 'none' }}>──</span>
+          
+          <span style={{ fontSize: isMobile ? '0.8rem' : '0.95rem' }}>Próximo</span>
+          
+          {/* Haste e cabeça da seta */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              transform: isBtnHovered ? 'translateX(5px)' : 'translateX(0px)',
+              transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            }}
+          >
+            <span style={{ opacity: 0.6, fontSize: isMobile ? '0.75rem' : '0.9rem', letterSpacing: '-1.5px', userSelect: 'none', marginRight: '2px' }}>──</span>
+            <span style={{ fontSize: isMobile ? '0.9rem' : '1.1rem', fontWeight: 'bold', lineHeight: 1 }}>➔</span>
+          </div>
         </button>
       )}
     </div>
@@ -211,9 +239,10 @@ function Dialbox({ dialogue, previous, onNext, ended }: DialboxProps) {
 interface ChoiceRowsProps {
   choices: Choice[];
   onChoose: (choice: Choice) => void;
+  isMobile: boolean;
 }
 
-function ChoiceRows({ choices, onChoose }: ChoiceRowsProps) {
+function ChoiceRows({ choices, onChoose, isMobile }: ChoiceRowsProps) {
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
@@ -267,12 +296,13 @@ function ChoiceRows({ choices, onChoose }: ChoiceRowsProps) {
     <div
       style={{
         position: 'absolute',
-        top: '26%',
-        left: '58%',
+        top: isMobile ? '38%' : '22%',
+        left: isMobile ? '5%' : '50%',
+        width: isMobile ? '90%' : 'auto',
         zIndex: 25,
         display: 'flex',
         flexDirection: 'column',
-        gap: 'clamp(8px, 1.6vh, 20px)',
+        gap: isMobile ? '16px' : 'clamp(16px, 3.2vh, 40px)',
       }}
     >
       {choices.map((choice, i) => {
@@ -287,16 +317,18 @@ function ChoiceRows({ choices, onChoose }: ChoiceRowsProps) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '16px',
+              gap: isMobile ? '16px' : '32px',
               cursor: 'pointer',
-              transformOrigin: 'center left',
-              padding: '12px 20px',
+              transformOrigin: isMobile ? 'center' : 'center left',
+              padding: isMobile ? '12px 20px' : '24px 40px',
               backgroundColor: 'rgba(252, 245, 235, 0.88)',
-              border: '1.5px solid rgba(122, 92, 58, 0.3)',
-              borderRadius: '16px',
-              boxShadow: '0 6px 16px rgba(0,0,0,0.12)',
+              border: isMobile ? '1.5px solid rgba(122, 92, 58, 0.3)' : '2.5px solid rgba(122, 92, 58, 0.35)',
+              borderRadius: isMobile ? '16px' : '32px',
+              boxShadow: isMobile ? '0 6px 16px rgba(0,0,0,0.12)' : '0 12px 32px rgba(0,0,0,0.18)',
               backdropFilter: 'blur(8px)',
               transition: 'border-color 0.2s',
+              width: '100%',
+              boxSizing: 'border-box',
             }}
           >
             {/* Ícone animado da reação */}
@@ -305,20 +337,22 @@ function ChoiceRows({ choices, onChoose }: ChoiceRowsProps) {
               alt={`reacao-${choice.reaction}`}
               draggable={false}
               style={{
-                height: 'clamp(46px, 7vh, 70px)',
+                height: isMobile ? 'clamp(50px, 8vh, 70px)' : 'clamp(92px, 14vh, 140px)',
                 width: 'auto',
-                filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.18))',
+                filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.18))',
                 pointerEvents: 'none',
-                borderRadius: '8px',
+                borderRadius: isMobile ? '8px' : '16px',
+                flexShrink: 0,
               }}
             />
             {/* Texto da choice */}
             <span
               style={{
                 fontFamily: "'Roboto Mono', monospace",
-                fontSize: 'clamp(0.85rem, 1.25vw, 1.2rem)',
+                fontSize: isMobile ? 'clamp(0.75rem, 3.2vw, 1rem)' : 'clamp(1.7rem, 2.5vw, 2.4rem)',
                 color: '#1e1208',
                 fontWeight: 600,
+                wordBreak: 'break-word',
               }}
             >
               {choice.text}
@@ -367,20 +401,36 @@ function EndOverlay({ finalChoiceText }: EndOverlayProps) {
         gap: '24px',
       }}
     >
-      {/* Caso escolha verde, mostra a imagem do ney no centro */}
+      {/* Caso escolha verde, mostra a imagem do ney no centro com a mensagem */}
       {isGreen && (
-        <img
-          src={neyGif}
-          alt="Ney"
-          style={{
-            maxWidth: '480px',
-            width: '85%',
-            height: 'auto',
-            borderRadius: '24px',
-            boxShadow: '0 16px 48px rgba(0, 0, 0, 0.65)',
-            filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.45))',
-          }}
-        />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+          <img
+            src={neyGif}
+            alt="Ney"
+            style={{
+              maxWidth: '480px',
+              width: '85%',
+              height: 'auto',
+              borderRadius: '24px',
+              boxShadow: '0 16px 48px rgba(0, 0, 0, 0.65)',
+              filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.45))',
+            }}
+          />
+          <p
+            style={{
+              fontFamily: "'Roboto Mono', monospace",
+              fontSize: 'clamp(1rem, 2vw, 1.45rem)',
+              color: '#f8e6c3',
+              textAlign: 'center',
+              fontWeight: 600,
+              letterSpacing: '0.05em',
+              margin: '10px 0 0 0',
+              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)',
+            }}
+          >
+            "Fica assim então, ah droga..."
+          </p>
+        </div>
       )}
 
       {/* Caso escolha azul, mostra o gif do celular recortado (final.gif) no centro com a mensagem */}
@@ -410,7 +460,7 @@ function EndOverlay({ finalChoiceText }: EndOverlayProps) {
               textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)',
             }}
           >
-            "vou continuar tentando na dm entao, fica ligada"
+            "Então avisa suas amigas que elas vão morar na lua, porque eu vou te dar o mundo"
           </p>
         </div>
       )}
@@ -436,12 +486,21 @@ function EndOverlay({ finalChoiceText }: EndOverlayProps) {
 // ── Main export ────────────────────────────────────────────────────────────────
 export default function GameUI() {
   const { current, previous, advance, choose, ended, selectedChoices } = useDialogue(1);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   if (!current) return null;
 
   const hasChoices = !!current.choices?.length;
 
-  const finalChoiceText = selectedChoices.find(c => c.dialogueId === 14)?.choiceText ?? null;
+  const finalChoiceText = selectedChoices.find(c => c.dialogueId === 15)?.choiceText ?? null;
 
   return (
     <>
@@ -451,6 +510,7 @@ export default function GameUI() {
         previous={previous}
         onNext={advance}
         ended={ended}
+        isMobile={isMobile}
       />
 
       {/* Choices — com GIFs correspondentes nos botões */}
@@ -458,6 +518,7 @@ export default function GameUI() {
         <ChoiceRows
           choices={current.choices!}
           onChoose={choose}
+          isMobile={isMobile}
         />
       )}
 

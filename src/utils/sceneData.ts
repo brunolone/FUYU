@@ -107,7 +107,7 @@ export const dialogues: Dialogue[] = [
   {
     id: 10,
     speaker: 'player',
-    text: 'Parando pra pensar nisso as flores acho que foram demais (mesmo sendo meio que uma forma de devolver seu dinheiro?). Errei fui mlk.',
+    text: 'Acho que já passou tempo bastante pra baixar a poeira e a gente poder conversar com um pouco mais de calma.',
     next: 11,
   },
 
@@ -130,22 +130,30 @@ export const dialogues: Dialogue[] = [
     ],
   },
 
-  // ── 13 ─ Bruno: azul / verde (fala final)
+  // ── 13 ─ Bruno: azul / verde (fala final parte 1)
   {
     id: 13,
     speaker: 'player',
-    text: 'Mas como disse, se voce gosta de verde, posso ser o azul mais legal que não vai adiantar nada.\nE aí?\nContinuo tentando acertar o tom de azul ou sua cor preferida é verde?',
+    text: 'Mas como disse, se sua cor preferida é verde, posso ser o azul mais legal que não vai adiantar nada.',
     next: 14,
   },
 
-  // ── 14 ─ Fernanda: escolha final
+  // ── 14 ─ Bruno: azul / verde (fala final parte 2)
   {
     id: 14,
+    speaker: 'player',
+    text: 'E agora?\nContinuo tentando acertar o tom de azul ou sua cor preferida é verde?',
+    next: 15,
+  },
+
+  // ── 15 ─ Fernanda: escolha final
+  {
+    id: 15,
     speaker: 'fernanda',
     text: '',
     choices: [
       { text: 'Minha cor preferida é verde.', next: null, reaction: 'que' },
-      { text: 'Ainda nao chegou no meu tom de azul.', next: null, reaction: 'hehe' },
+      { text: 'Você ainda não chegou no meu tom de azul.', next: null, reaction: 'hehe' },
     ],
   },
 ];
