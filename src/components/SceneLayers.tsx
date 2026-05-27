@@ -69,8 +69,6 @@ export default function SceneLayers() {
     const tree1 = root.querySelector('.layer-tree1');
     const tree = root.querySelector('.layer-tree');
 
-    // Espelha horizontalmente os backgrounds
-    gsap.set([sky, bg, tree].filter(Boolean), { scaleX: -1 });
 
     // Parallax interativo suave com o mouse
     const handleMouseMove = (e: MouseEvent) => {
@@ -118,16 +116,16 @@ export default function SceneLayers() {
     <div ref={rootRef} className="scene-layer overflow-hidden">
       <div
         className="layer-sky absolute inset-[-5%] bg-cover bg-center will-change-transform"
-        style={{ backgroundImage: `url(${skyImg})` }}
+        style={{ backgroundImage: `url(${skyImg})`, transform: 'scaleX(-1)' }}
       />
       <div
         className="layer-bg absolute inset-[-5%] bg-cover bg-center will-change-transform"
-        style={{ backgroundImage: `url(${bgImg})` }}
+        style={{ backgroundImage: `url(${bgImg})`, transform: 'scaleX(-1)' }}
       />
 
       <div
         className="layer-tree absolute inset-[-5%] bg-cover bg-center will-change-transform"
-        style={{ backgroundImage: `url(${treeImg})` }}
+        style={{ backgroundImage: `url(${treeImg})`, transform: 'scaleX(-1)' }}
       />
 
       {/* Partículas Atmosféricas (Poeira iluminada) */}
